@@ -10,22 +10,26 @@
     </ion-header>
 
     <ion-content class="ion-padding">
-        <!-- 日記內容將顯示於此 -->
+        <!-- 載入中 -->
+        <div v-if="isLoading" style="text-align:center; margin-top:50px;">
+          <ion-spinner name="crescent"></ion-spinner>
+          <p>載入日記中...</p>
+        </div>
 
         <!-- 若找不到日記，顯示錯誤訊息 -->
-        <div v-if="!diary" style="text-align:center; margin-top: 2rem;">
-        <p>找不到此篇日記 😢</p>
+        <div v-else-if="!diary" style="text-align:center; margin-top: 2rem;">
+          <p>找不到此篇日記 😢</p>
         </div>
 
         <!-- 找到日記，顯示完整內容 -->
         <div v-else>
-        <h1>{{ diary.title }}</h1>
-        <p style="color: gray;">
-        📅 {{ diary.date }}
-        <ion-badge :color="diary.color">{{ diary.mood }}</ion-badge>
-        </p>
-        <hr />
-        <p>{{ diary.content }}</p>
+          <h1>{{ diary.title }}</h1>
+          <p style="color: gray;">
+          📅 {{ diary.date }}
+          <ion-badge :color="diary.color">{{ diary.mood }}</ion-badge>
+          </p>
+          <hr/>
+          <p>{{ diary.content }}</p>
         </div>
     </ion-content>
   </ion-page>
@@ -52,8 +56,8 @@
         isLoading.value = true;
         const id = route.params.id; // 從路由取得 :id 參數
 
-        const respone = await axios.get('http://localhost:3000/diaries/${id}');
-        diary.value = respone.data;
+        const response = await axios.get(`http://localhost:3000/diaries/${id}`);
+        diary.value = response.data;
 
       } catch (error) {
         console.error("抓取日記失敗：", error);
@@ -61,4 +65,8 @@
         isLoading.value = false;
       }
     }
+
+    onIonViewWillEnter(() => {
+      fetchDiary();
+    });
 </script>

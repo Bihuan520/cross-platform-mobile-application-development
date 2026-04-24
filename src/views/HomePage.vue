@@ -25,6 +25,12 @@
         <ion-card-content>{{ diary.content }}</ion-card-content>
       </ion-card>
       </template>
+
+      <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+        <ion-fab-button router-link="/add">
+          <ion-icon :icon="addIcon" />
+        </ion-fab-button>
+      </ion-fab>
     </ion-content>
   </ion-page>
 </template>
@@ -34,10 +40,11 @@
   import { 
     IonPage, IonHeader, IonToolbar, IonTitle, 
     IonContent, IonCard, IonCardHeader, IonCardTitle, 
-    IonCardSubtitle, IonCardContent
+    IonCardSubtitle, IonCardContent, onIonViewWillEnter,
+    IonFab, IonFabButton, IonIcon
   } from '@ionic/vue';
   import axios from 'axios';
-  import { onIonViewWillEnter } from '@ionic/vue';
+  import { add as addIcon } from 'ionicons/icons';
   
   // 原本寫死的資料，改成空陣列
   const diaries = ref([]);
@@ -51,7 +58,7 @@
 
       // 向 API 請求資料
       // const respone = await axios.get('https://jsonplaceholder.typicode.com/posts')
-      const respone = await axios.get('https://localhost:3000/diaries')
+      const respone = await axios.get('http://localhost:3000/diaries')
       
       // axios 會把結果放在 .data 裡面
       diaries.value = respone.data
@@ -61,6 +68,8 @@
     } finally {
       isLoading.value = false; // 關閉載入動畫
     }
+
+    diaries.value.reverse();
   }
 
   onIonViewWillEnter(() => {

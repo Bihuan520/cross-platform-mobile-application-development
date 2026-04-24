@@ -16,6 +16,10 @@ const routes: Array<RouteRecordRaw> = [
     path: '/detail/:id',   // :id 是動態參數，對應清單中的 diary.id
     name: 'Detail',
     component: () => import('@/views/DiaryDetail.vue')
+  },
+  {
+    path: '/add',
+    component: () => import('@/views/AddDiaryPage.vue'),
   }
 ]
 
