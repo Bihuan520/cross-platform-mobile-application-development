@@ -7,6 +7,14 @@
     </ion-header>
 
     <ion-content :fullscreen="true" class="ion-padding">
+      <!-- 如果正在載入，顯示這個區塊 -->
+       <div v-if="isLoading" style="text-align: center; margin-top: 50px;">
+        <ion-spinner name="crescent"></ion-spinner>
+        <p>正在努力抓取日記中...</p>
+       </div>
+
+       <!-- 如果沒有正在載入，才顯示迴圈卡片 -->
+      <template v-else>
       <ion-card v-for="diary in diaries" :key="diary.id" :router-link="'/detail/' + diary.id">
         <ion-card-header>
           <ion-card-subtitle>{{ diary.date }} 
@@ -16,6 +24,7 @@
           </ion-card-header>
         <ion-card-content>{{ diary.content }}</ion-card-content>
       </ion-card>
+      </template>
     </ion-content>
   </ion-page>
 </template>
@@ -27,13 +36,36 @@
     IonContent, IonCard, IonCardHeader, IonCardTitle, 
     IonCardSubtitle, IonCardContent
   } from '@ionic/vue';
+  import axios from 'axios';
+  import { onIonViewWillEnter } from '@ionic/vue';
   
-  const diaries = ref([
-    { id: 1, title: '開學第一天', date: '2023-09-12', content: '終於升上大三了！', mood: '開心', color: 'success' },
-    { id: 2, title: 'Vue 3 好難懂', date: '2023-09-18', content: '原來 ref 要加 .value 啊...', mood: '傷心', color: 'secondary' },
-    { id: 3, title: '好想吃火鍋', date: '2023-09-25', content: '天氣變冷了，晚餐去吃學校後門的火鍋。', mood: '嚇到', color: 'danger' },
-     { id: 4, title: '今天天氣好好', date: '2026-03-20', content: '太陽好大好熱', mood: '驚訝', color: 'danger' }
-  ]);
+  // 原本寫死的資料，改成空陣列
+  const diaries = ref([]);
+
+  // 建立一個變數來控制 Loading 動畫
+  const isLoading = ref(false);
+
+  const fetchDiaries = async () => {
+    try {
+      isLoading.value = true; // 開啟載入動畫
+
+      // 向 API 請求資料
+      // const respone = await axios.get('https://jsonplaceholder.typicode.com/posts')
+      const respone = await axios.get('https://localhost:3000/diaries')
+      
+      // axios 會把結果放在 .data 裡面
+      diaries.value = respone.data
+    
+    } catch (error) {
+      console.error('抓取失敗：', error);
+    } finally {
+      isLoading.value = false; // 關閉載入動畫
+    }
+  }
+
+  onIonViewWillEnter(() => {
+    fetchDiaries();
+  })
 </script>
 
 <style scoped>

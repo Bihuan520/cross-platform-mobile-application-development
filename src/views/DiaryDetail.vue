@@ -34,24 +34,31 @@
 <script setup lang="ts">
     import {
     IonPage, IonHeader, IonToolbar, IonTitle,
-    IonContent, IonButtons, IonBackButton
+    IonContent, IonButtons, IonBackButton,
+    IonBadge, IonSpinner
     } from '@ionic/vue';
     import { useRoute } from 'vue-router';
     import { ref } from 'vue';
+    import axios from 'axios';
+    import { onIonViewWillEnter } from '@ionic/vue';
 
     const route = useRoute();
+    const diary = ref(null); // 等資料回來才填入
+    const isLoading = ref(false); // 控制載入動畫
+    
+    // 向 server 抓取單篇日記的函式
+    const fetchDiary = async () => {
+      try {
+        isLoading.value = true;
+        const id = route.params.id; // 從路由取得 :id 參數
 
-    // ① 與 HomePage 相同的日記資料（暫時重複，下週學完 API 後才統一管理
-    const allDiaries = [
-        { id: 1, title: '開學第一天', date: '2023-09-12', content: '終於升上大三了！', mood: '開心', color: 'success' },
-        { id: 2, title: 'Vue 3 好難懂', date: '2023-09-18', content: '原來 ref 要加 .value 啊...', mood: '傷心', color: 'secondary' },
-        { id: 3, title: '好想吃火鍋', date: '2023-09-25', content: '天氣變冷了，晚餐去吃學校後門的火鍋。', mood: '嚇到', color: 'danger' },
-        { id: 4, title: '今天天氣好好', date: '2026-03-20', content: '太陽好大好熱', mood: '驚訝', color: 'danger' }
-    ];
+        const respone = await axios.get('http://localhost:3000/diaries/${id}');
+        diary.value = respone.data;
 
-    // ② 從路由參數取出 id，並轉型為數字
-    const currentId = Number(route.params.id);
-
-    // ③ 用 find() 在陣列中找到對應的日記
-    const diary = ref(allDiaries.find(d => d.id === currentId) || null);
+      } catch (error) {
+        console.error("抓取日記失敗：", error);
+      }finally {
+        isLoading.value = false;
+      }
+    }
 </script>
