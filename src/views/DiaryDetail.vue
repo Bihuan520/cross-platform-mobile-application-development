@@ -5,6 +5,9 @@
         <ion-buttons slot="start">
           <ion-back-button default-href="/home"></ion-back-button>
         </ion-buttons>
+        <ion-buttons slot="end">
+          <ion-button :router-link="`/edit/${route.params.id}`">✏️ 編輯</ion-button>
+        </ion-buttons>
         <ion-title>日記內容</ion-title>
       </ion-toolbar>
     </ion-header>
@@ -23,28 +26,43 @@
 
         <!-- 找到日記，顯示完整內容 -->
         <div v-else>
-          <h1>{{ diary.title }}</h1>
-          <p style="color: gray;">
+          <ion-item lines="none">
+            <div class="left">
           📅 {{ diary.date }}
-          <ion-badge :color="diary.color">{{ diary.mood }}</ion-badge>
-          </p>
+            <ion-badge :color="diary.color">{{ diary.mood }}</ion-badge>
+          </div>
+          <ion-button slot="end" fill="clear" color="dark" @click="deleteDiary">
+            <ion-icon :icon="trashOutline"></ion-icon>
+          </ion-button>
+        </ion-item>
+          <h1>{{ diary.title }}</h1>
           <hr/>
           <p>{{ diary.content }}</p>
         </div>
     </ion-content>
   </ion-page>
 </template>
+<style scoped>
+.left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+</style>
 
 <script setup lang="ts">
     import {
     IonPage, IonHeader, IonToolbar, IonTitle,
-    IonContent, IonButtons, IonBackButton,
+    IonContent, IonButton, IonButtons, IonBackButton,
     IonBadge, IonSpinner
     } from '@ionic/vue';
-    import { useRoute } from 'vue-router';
+    import { trashOutline } from 'ionicons/icons';
+    import { useRoute, useRouter } from 'vue-router';
     import { ref } from 'vue';
     import axios from 'axios';
     import { onIonViewWillEnter } from '@ionic/vue';
+    import { alertController } from '@ionic/vue';
+    const router = useRouter();
 
     const route = useRoute();
     const diary = ref(null); // 等資料回來才填入
@@ -65,6 +83,26 @@
         isLoading.value = false;
       }
     }
+
+    const deleteDiary = async () => {
+      const alert = await alertController.create({
+        header: '確認刪除',
+        message: '確定要刪除這篇日記嗎？此操作無法復原。',
+        buttons: [ 
+          { text: '取消', role: 'cancel' },
+          {
+            text: '刪除',
+            role: 'destructive',
+            handler: async () => {
+              const id = route.params.id;
+              await axios.delete(`http://localhost:3000/diaries/${id}`);
+              router.back(); // 刪除後返回首頁
+            },
+          },
+        ],
+      });
+      await alert.present();
+    };
 
     onIonViewWillEnter(() => {
       fetchDiary();

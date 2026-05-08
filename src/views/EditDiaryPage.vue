@@ -3,18 +3,21 @@
     <ion-header>
     <ion-toolbar>
         <ion-buttons slot="start">
-        <ion-back-button default-href="/" />
+            <ion-back-button default-href="/" />
         </ion-buttons>
-        <ion-title>新增日記</ion-title>
+        <ion-title>編輯日記</ion-title>
         <ion-buttons slot="end">
-        <ion-button :disabled="isLoading" @click="submitDiary">儲存</ion-button>
+            <ion-button :disabled="isLoading" @click="submitEdit">
+                <ion-spinner v-if="isLoading" name="crescent" />
+                <span v-else>儲存</span>
+            </ion-button>
         </ion-buttons>
     </ion-toolbar>
     </ion-header>
     <ion-content class="ion-padding">
         <ion-item>
             <ion-label position="stacked">標題</ion-label>
-            <ion-input v-model="form.title" placeholder="今天發生什麼事？" />
+            <ion-input v-model="form.title" />
         </ion-item>
         <ion-item>
             <ion-label position="stacked">日期</ion-label>
@@ -28,7 +31,7 @@
         </ion-item>
         <ion-item>
             <ion-label position="stacked">內容</ion-label>
-            <ion-textarea v-model="form.content" :rows="6" placeholder="寫下今天的心情..."></ion-textarea>
+            <ion-textarea v-model="form.content" :rows="6" />
         </ion-item>
     </ion-content>
   </ion-page>
@@ -45,12 +48,14 @@
         IonToolbar, IonTitle, IonButtons, IonButton,
         IonBackButton, IonItem, IonLabel, IonInput,
         IonSelect, IonSelectOption, IonTextarea,
+        IonSpinner, onIonViewWillEnter,
     } from '@ionic/vue';
     import { ref } from 'vue';
-    import { useRouter } from 'vue-router';
+    import { useRoute, useRouter } from 'vue-router';
     import axios from 'axios'; 
 
     const isLoading = ref(false);
+    const route = useRoute();
 
     const moodColors = {
         '開心': 'success',
@@ -77,13 +82,12 @@
         '幸福': 'success',
     };
 
-
     const form = ref({
         title: '',
-        date: new Date().toISOString().slice(0, 10), // 預設今天
+        date: '',
         content: '',
         mood: '開心',
-        color: 'success',
+        color: 'success'
     });
 
     const onMoodChange = (e) => {
@@ -92,12 +96,13 @@
     };
 
     const router = useRouter();
+    const id = route.params.id;
 
-    const submitDiary = async () => {
+    const submitEdit = async () => {
     if (!form.value.title || !form.value.content) return;
     try {
         isLoading.value = true;
-        await axios.post('http://localhost:3000/diaries', form.value);
+        await axios.put(`http://localhost:3000/diaries/${id}`, form.value);
         router.back(); // 新增完畢，返回首頁
     } catch (error) {
         console.error('新增失敗：', error);
@@ -105,4 +110,11 @@
         isLoading.value = false;
     }
     };
+
+    // 進入頁面時，先從 Server 取得現有資料，填入表單
+    onIonViewWillEnter(async () => {
+    const id = route.params.id;
+    const res = await axios.get(`http://localhost:3000/diaries/${id}`);
+    form.value = { ...res.data }; // 展開運算子：把現有資料複製進 form
+    });
 </script>
