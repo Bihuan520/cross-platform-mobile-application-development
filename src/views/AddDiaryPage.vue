@@ -48,8 +48,9 @@
     } from '@ionic/vue';
     import { ref } from 'vue';
     import { useRouter } from 'vue-router';
-    import axios from 'axios'; 
 
+    import { useDiaryStore } from '@/stores/diary';
+    const diaryStore = useDiaryStore();
     const isLoading = ref(false);
 
     const moodColors = {
@@ -97,7 +98,7 @@
     if (!form.value.title || !form.value.content) return;
     try {
         isLoading.value = true;
-        await axios.post('http://localhost:3000/diaries', form.value);
+        await diaryStore.create(form.value);
         router.back(); // 新增完畢，返回首頁
     } catch (error) {
         console.error('新增失敗：', error);

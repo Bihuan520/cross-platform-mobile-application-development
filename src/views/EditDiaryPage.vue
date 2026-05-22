@@ -52,10 +52,14 @@
     } from '@ionic/vue';
     import { ref } from 'vue';
     import { useRoute, useRouter } from 'vue-router';
-    import axios from 'axios'; 
+
+    import { useDiaryStore } from '@/stores/diary';
+    const diaryStore = useDiaryStore();
 
     const isLoading = ref(false);
     const route = useRoute();
+    const id = route.params.id;
+    const router = useRouter();
 
     const moodColors = {
         '開心': 'success',
@@ -95,14 +99,11 @@
         form.value.color = moodColors[form.value.mood] || 'medium';
     };
 
-    const router = useRouter();
-    const id = route.params.id;
-
     const submitEdit = async () => {
     if (!form.value.title || !form.value.content) return;
     try {
         isLoading.value = true;
-        await axios.put(`http://localhost:3000/diaries/${id}`, form.value);
+        await diaryStore.update(id, form.value);
         router.back(); // 新增完畢，返回首頁
     } catch (error) {
         console.error('新增失敗：', error);
@@ -113,8 +114,7 @@
 
     // 進入頁面時，先從 Server 取得現有資料，填入表單
     onIonViewWillEnter(async () => {
-    const id = route.params.id;
-    const res = await axios.get(`http://localhost:3000/diaries/${id}`);
-    form.value = { ...res.data }; // 展開運算子：把現有資料複製進 form
+        const found = diaryStore.diaries.find(d => d.id === Number(id));
+        if (found) form.value = { ...found };
     });
 </script>

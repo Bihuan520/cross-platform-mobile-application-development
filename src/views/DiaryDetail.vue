@@ -62,6 +62,10 @@
     import axios from 'axios';
     import { onIonViewWillEnter } from '@ionic/vue';
     import { alertController } from '@ionic/vue';
+
+    import { useDiaryStore } from '@/stores/diary';
+    const diaryStore = useDiaryStore();
+    
     const router = useRouter();
 
     const route = useRoute();
@@ -95,7 +99,7 @@
             role: 'destructive',
             handler: async () => {
               const id = route.params.id;
-              await axios.delete(`http://localhost:3000/diaries/${id}`);
+              await diaryStore.remove(route.params.id);
               router.back(); // 刪除後返回首頁
             },
           },
